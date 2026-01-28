@@ -1,0 +1,20 @@
+README.md
+Dockerfile
+*.yaml
+
+# Python
+.venv
+.mypy_cache
+.ruff_cache
+.VSCodeCounter
+requirements.txt
+.python-version
+
+# Git repo
+.git
+.gitignore
+
+# Environment
+.env
+.env*
+/env

@@ -1,0 +1,87 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.17.1",
+    "alembic-postgresql-enum>=1.8.0",
+    "anyio>=4.11.0",
+    "asyncpg>=0.30.0",
+    "boto3>=1.40.71",
+    "dishka>=1.7.2",
+    "events",
+    "fastapi>=0.121.1",
+    "opencv-python-headless>=4.12.0.88",
+    "pydantic>=2.12.4",
+    "pydantic-settings>=2.12.0",
+    "python-magic-standalone>=0.4.28",
+    "python-multipart>=0.0.20",
+    "redis>=6.4.0",
+    "sqlalchemy[asyncio]>=2.0.44",
+    "taskiq>=0.11.20",
+    "taskiq-aio-pika>=0.4.4",
+    "taskiq-cancellation>=0.0.1",
+    "taskiq-redis>=1.1.2",
+    "types-boto3[s3]>=1.40.71",
+    "uvicorn>=0.38.0",
+    "websockets>=15.0.1",
+]
+
+[project.optional-dependencies]
+
+cpu = [
+    "transformers",
+    "ultralytics>=8.3.227",
+    "huggingface-hub>=0.36.0",
+    "torch >= 2.9.1 ; sys_platform == 'win32'",
+    "torchvision >= 0.24.1 ; sys_platform == 'win32'",
+    "torch == 2.9.1+cpu ; sys_platform != 'win32'",
+    "torchvision == 0.24.1+cpu ; sys_platform != 'win32'",
+    "optimum-onnx[onnxruntime]>=0.0.3",
+]
+
+gpu = [
+    "transformers",
+    "ultralytics>=8.3.227",
+    "huggingface-hub>=0.36.0",
+    "torch >= 2.9.1",
+    "torchvision >= 0.24.1",
+    "optimum-onnx[onnxruntime-gpu]>=0.0.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["ruff>=0.14.6"]
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "src"
+
+[tool.uv]
+conflicts = [[{ extra = "cpu" }, { extra = "gpu" }]]
+
+[tool.uv.sources]
+events = { git = "https://github.com/ACherryJam/events.git" }
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu128", extra = "gpu" },
+]
+torchvision = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu128", extra = "gpu" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true

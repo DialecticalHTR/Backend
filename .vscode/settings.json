@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "compose-infra.yaml": "dockercompose"
+    }
+}

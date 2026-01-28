@@ -1,0 +1,114 @@
+include:
+  - compose-infra.yaml
+
+x-image-builder: &image-builder
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      INFERENCE_TYPE: cpu
+      TROCR_MODEL_TYPE: ${TROCR_MODEL_TYPE}
+
+x-backend-env: &backend-env
+  S3_SECRET_KEY: ${S3_SECRET_KEY}
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+  S3_ENDPOINT_URL: http://s3:9000
+
+  SQL_CONNECTION_URL: postgresql+asyncpg://${SQL_USER}:${SQL_PASSWORD}@sql/${SQL_DBNAME}
+
+  TASKS_BROKER_URL: amqp://${RMQ_USER}:${RMQ_PASSWORD}@rabbitmq:5672
+  TASKS_RESULT_BACKEND_URL: redis://redis:6379
+  TASKS_CANCELLATION_STATE_HOLDER_URL: redis://redis:6379
+  TASKS_CANCELLATION_NOTIFIER_URL: redis://redis:6379
+  TASKS_DEDUPLICATION_BACKEND_URL: redis://redis:6379
+
+  INTEGRATION_REDIS_URL: redis://redis:6379
+  INTEGRATION_RMQ_CONNECTION_URL: amqp://${RMQ_USER}:${RMQ_PASSWORD}@rabbitmq:5672
+
+x-infra-dependecies: &infra-dependecies
+  redis:
+    condition: service_healthy
+  s3:
+    condition: service_healthy
+  sql_db:
+    condition: service_healthy
+  rabbitmq:
+    condition: service_healthy
+  db-migrations:
+    condition: service_completed_successfully
+
+services:
+  # Run migrations before running application components
+  db-migrations:
+    <<: *image-builder
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      <<: *backend-env
+    depends_on:
+      sql_db:
+        condition: service_healthy
+  
+  outbox:
+    <<: *image-builder
+    image: backend
+    command: [ "python", "-m", "src.infrastructure.outbox" ]
+    environment:
+      TROCR_MODEL_TYPE: onnx
+      <<: *backend-env
+    depends_on:
+      <<: *infra-dependecies
+
+  integration_event_listener:
+    <<: *image-builder
+    image: backend
+    command: [ "python", "-m", "src.infrastructure.integration_event_listener" ]
+    environment:
+      <<: *backend-env
+    depends_on:
+      <<: *infra-dependecies
+
+  recognition_worker:
+    <<: *image-builder
+    image: backend
+    command: [ "python", "-m", "src.infrastructure.recognition_worker" ]
+    # Models from the image can be replaced with a volume:
+    # - Uncomment volumes section and HF_HOME
+    # - Set YOLO_MODEL_ID and TROCR_MODEL_ID to HuggingFace repo id or ignore
+    #   to use default ones
+
+    # volumes:
+    #   - hugging_face_cache:/models
+    environment:
+      # HF_HOME: /models
+      TROCR_MODEL_TYPE: ${TROCR_MODEL_TYPE}
+      TROCR_MODEL_ID: /models/trocr_${TROCR_MODEL_TYPE}
+      YOLO_MODEL_PATH: /models/yolo/model.pt
+      <<: *backend-env
+    depends_on:
+      <<: *infra-dependecies
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  web_server:
+    <<: *image-builder
+    image: backend
+    ports:
+      - "8000:8000"
+    command: [ "python", "-m", "src.presentation.http" ]
+    environment:
+      <<: *backend-env
+    depends_on:
+      outbox:
+        condition: service_started
+      integration_event_listener:
+        condition: service_started
+      recognition_worker:
+        condition: service_started
+
+volumes:
+  hugging_face_cache: {}
