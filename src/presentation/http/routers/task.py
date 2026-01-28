@@ -70,10 +70,6 @@ async def update_task_text(
     return TaskMapper.from_domain(task)
 
 
-import logging
-logger = logging.getLogger(__name__)
-
-
 @router.websocket("/status")
 @inject
 async def listen_for_status_updates(

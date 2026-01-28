@@ -7,15 +7,13 @@ from dishka import make_async_container, AsyncContainer
 from dishka.integrations.fastapi import setup_dishka as setup_fastapi
 from events.domain.implementation.dishka import DomainEventImplementationProvider
 
+from src.logger import setup_logging
 from src.application.bus import DurableIntegrationEventBus, FanoutIntegrationEventBus
 
 from src.application import get_common_application_providers
 from src.application.task.interactors import TaskInteractorsProvider
 from src.infrastructure import get_common_infrastructure_providers
-
 from src.infrastructure.recognition_worker.provider import RecognitionGatewayProvider
-from src.logger import setup_logging
-setup_logging()
 
 from .routers import routers
 
@@ -63,6 +61,8 @@ def app() -> FastAPI:
 
 
 if __name__ == "__main__":
+    setup_logging()
+    
     server = uvicorn.Server(
         uvicorn.Config(
             app=app, 

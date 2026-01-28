@@ -115,6 +115,10 @@ class CompleteTaskInteractor(BaseInteractor):
 
             await self.transaction.commit()
         except Exception as e:
+            logger.exception(
+                "Error happened in CompleteTaskInteractor",
+                exc_info=e
+            )
             await self.transaction.rollback()
             raise
 

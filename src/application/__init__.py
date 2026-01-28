@@ -10,3 +10,9 @@ def get_common_application_providers() -> list[Provider]:
         InteractorFactoryProvider()
     ]
 
+
+__all__ = [
+    "InteractorFactoryProvider",
+    "RecognitionInteractorsProvider",
+    "TaskInteractorsProvider"
+]

@@ -1,5 +1,4 @@
 import logging
-import traceback
 from typing import AsyncIterable
 
 from dishka import Provider, provide, Scope
@@ -7,7 +6,6 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSessio
 
 from src.application.transaction import Transaction
 
-from .base import BaseSQLModel
 from .settings import SQLSettings
 from .transaction import AlchemyTransaction
 
@@ -26,10 +24,6 @@ class SQLAlchemyProvider(Provider):
             url=settings.connection_url, 
             pool_pre_ping=True,
         )
-
-        # FIXME: don't do this, use migrations
-        # async with engine.begin() as conn:
-        #     await conn.run_sync(BaseSQLModel.metadata.create_all)
 
         yield engine
 

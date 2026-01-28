@@ -1,4 +1,3 @@
-import uuid
 from dataclasses import dataclass
 
 from events.integration.event import IntegrationEvent

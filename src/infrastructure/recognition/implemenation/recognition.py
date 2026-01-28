@@ -1,4 +1,3 @@
-from ast import Import
 import asyncio
 import logging
 
@@ -59,7 +58,7 @@ class ONNXTrOCRTextRecognition(TextRecognition):
             from optimum.onnxruntime import ORTModelForVision2Seq
         except ImportError as e:
             logger.fatal(
-                f"ONNXTrOCRTextRecognition requires torch, transformers and optimum.onnxruntime to "
+                "ONNXTrOCRTextRecognition requires torch, transformers and optimum.onnxruntime to "
                 "be installed.\nInstall cpu and gpu extra to get inference modules.",
                 exc_info=e
             )

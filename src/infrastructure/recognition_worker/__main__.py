@@ -48,12 +48,12 @@ def main():
     setup_logging()
     
     args = WorkerArgs(
-        broker=f"src.infrastructure.recognition_worker.__main__:broker",
+        broker="src.infrastructure.recognition_worker.__main__:broker",
         modules=[],
         workers=1,
         max_prefetch=1,
         ack_type=AcknowledgeType.WHEN_SAVED,
-        receiver=f"src.infrastructure.recognition_worker.receiver:RaisingReceiver"
+        receiver="src.infrastructure.recognition_worker.receiver:RaisingReceiver"
     )
     run_worker(args)
     
